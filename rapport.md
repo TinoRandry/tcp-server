@@ -33,4 +33,4 @@ hello
 
 #### **2.2.2 Cas de deux clients**
 
-Si on essaye de connecter deux clients en même temps, il n'y aura aucun problème et les deux client seront connecté sur le serveur. Mais si le deuxième xlient envoie un message au serveur alors que le premier ne l'a oas encore fait, ce dernier ne recevera oas l'echo.
+Si on essaye de connecter deux clients en même temps, il n'y aura aucun problème et les deux client seront connecté sur le serveur. Mais si le deuxième xlient envoie un message au serveur alors que le premier ne l'a oas encore fait, ce dernier ne recevera pas l'echo.
