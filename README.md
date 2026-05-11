@@ -98,3 +98,40 @@ Les numéros de connexion sont différents (#1, #2, #3...) grâce au mutex qui
 protège le compteur. La version fork consomme moins de mémoire au repos mais
 sous charge chaque fils duplique toute la mémoire du père. Les threads partagent
 la mémoire donc sont plus efficaces sous forte charge.
+
+## Partie 4 — Multiplexage I/O avec select()
+
+### Description
+Serveur mono-thread qui surveille plusieurs clients simultanément avec select().
+Un tableau clients[] de FD_SETSIZE descripteurs est initialisé à -1. select()
+surveille tous les descripteurs avec un timeout de 5 secondes. Aucun thread
+ni processus fils n'est créé.
+
+### Test effectué
+    tino@ubuntu:~/tcp-server$ ./tcp_server
+    Serveur select démarré sur le port 9999
+    Timeout, en attente...
+    Timeout, en attente...
+    Descripteurs surveillés : 1
+
+    tino@ubuntu:~$ for i in $(seq 1 8); do
+        (echo "Client $i : bonjour" | nc -q 1 127.0.0.1 9999) &
+    done
+    Echo : Client 3 : bonjour
+    Echo : Client 8 : bonjour
+    Echo : Client 4 : bonjour
+    Echo : Client 5 : bonjour
+    Echo : Client 7 : bonjour
+    Echo : Client 6 : bonjour
+    Echo : Client 1 : bonjour
+    Echo : Client 2 : bonjour
+    Tous les clients ont terminé
+
+### Réponses aux questions select vs poll
+select() est limité à FD_SETSIZE = 1024 descripteurs maximum alors que poll()
+utilise un tableau dynamique sans limite fixe. FD_SETSIZE=1024 est un problème
+en production car un serveur peut recevoir des milliers de connexions simultanées.
+Pour 500 connexions poll() est préférable car son API est plus claire et il n'est
+pas nécessaire de reconstruire le fd_set à chaque appel. Pour 10 000+ connexions
+la syscall recommandée est epoll (Linux) avec une complexité O(1) au lieu de
+O(n) pour select/poll, utilisé par nginx, Redis et Node.js.

@@ -3,54 +3,19 @@
 #include <string.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <sys/select.h>
 #include <unistd.h>
-#include <pthread.h>
 #include "server.h"
-
-#define MAX_THREADS 16
-
-static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
-static int connexions_actives = 0;
-
-void afficher_statut(void) {
-    pthread_mutex_lock(&mutex);
-    printf("Connexions actives : %d / %d\n", connexions_actives, MAX_THREADS);
-    pthread_mutex_unlock(&mutex);
-}
-
-void *handle_client_thread(void *arg) {
-    int connfd = *(int *)arg;
-    free(arg);
-
-    pthread_mutex_lock(&mutex);
-    connexions_actives++;
-    pthread_mutex_unlock(&mutex);
-
-    afficher_statut();
-
-    char buf[BUF_SIZE];
-    char response[BUF_SIZE + 64];
-    ssize_t n = read(connfd, buf, sizeof(buf) - 1);
-    if (n > 0) {
-        buf[n] = '\0';
-        static int conn_num = 0;
-        conn_num++;
-        snprintf(response, sizeof(response), "[Connexion #%d] Echo : %s", conn_num, buf);
-        write(connfd, response, strlen(response));
-    }
-    close(connfd);
-
-    pthread_mutex_lock(&mutex);
-    connexions_actives--;
-    pthread_mutex_unlock(&mutex);
-
-    return NULL;
-}
 
 int main(void) {
     int listenfd, connfd;
     struct sockaddr_in srv;
     int opt = 1;
+    int clients[FD_SETSIZE];
+    int i, maxi = -1, nready, maxfd;
+    fd_set rset, allset;
+
+    for (i = 0; i < FD_SETSIZE; i++) clients[i] = -1;
 
     listenfd = socket(AF_INET, SOCK_STREAM, 0);
     if (listenfd < 0) { perror("socket"); exit(1); }
@@ -69,28 +34,57 @@ int main(void) {
         perror("listen"); exit(1);
     }
 
-    printf("Serveur threads démarré sur le port %d\n", PORT);
+    FD_ZERO(&allset);
+    FD_SET(listenfd, &allset);
+    maxfd = listenfd;
+
+    printf("Serveur select démarré sur le port %d\n", PORT);
 
     while (1) {
-        connfd = accept(listenfd, NULL, NULL);
-        if (connfd < 0) { perror("accept"); continue; }
+        rset = allset;
+        struct timeval tv = {5, 0};
+        nready = select(maxfd + 1, &rset, NULL, NULL, &tv);
+        if (nready < 0) { perror("select"); continue; }
+        if (nready == 0) { printf("Timeout, en attente...\n"); continue; }
 
-        pthread_mutex_lock(&mutex);
-        if (connexions_actives >= MAX_THREADS) {
-            pthread_mutex_unlock(&mutex);
-            char *msg = "Serveur saturé, réessayez plus tard.\n";
-            write(connfd, msg, strlen(msg));
-            close(connfd);
-            continue;
+        if (FD_ISSET(listenfd, &rset)) {
+            connfd = accept(listenfd, NULL, NULL);
+            for (i = 0; i < FD_SETSIZE; i++) {
+                if (clients[i] == -1) {
+                    clients[i] = connfd;
+                    if (i > maxi) maxi = i;
+                    break;
+                }
+            }
+            FD_SET(connfd, &allset);
+            if (connfd > maxfd) maxfd = connfd;
+            if (--nready <= 0) continue;
         }
-        pthread_mutex_unlock(&mutex);
 
-        int *fd_copy = malloc(sizeof(int));
-        *fd_copy = connfd;
+        for (i = 0; i <= maxi; i++) {
+            if (clients[i] == -1) continue;
+            if (FD_ISSET(clients[i], &rset)) {
+                char buf[BUF_SIZE];
+                char response[BUF_SIZE + 64];
+                ssize_t n = read(clients[i], buf, sizeof(buf) - 1);
+                if (n <= 0) {
+                    close(clients[i]);
+                    FD_CLR(clients[i], &allset);
+                    clients[i] = -1;
+                } else {
+                    buf[n] = '\0';
+                    snprintf(response, sizeof(response), "Echo : %s", buf);
+                    write(clients[i], response, strlen(response));
+                }
 
-        pthread_t tid;
-        pthread_create(&tid, NULL, handle_client_thread, fd_copy);
-        pthread_detach(tid);
+                int count = 0;
+                for (int j = 0; j < FD_SETSIZE; j++)
+                    if (clients[j] != -1) count++;
+                printf("Descripteurs surveillés : %d\n", count);
+
+                if (--nready <= 0) break;
+            }
+        }
     }
     return 0;
 }
