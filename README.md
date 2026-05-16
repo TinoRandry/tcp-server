@@ -1,18 +1,55 @@
 # TCP Server UNIX
 
 **Auteurs :**
-- FIONONANA RANDRY Tino
-- RAFANOMEZANTSOA Holinirina Vahatriniaina
-- RAKOTOVAO Nantenaina Elvys
+- FIONONANA RANDRY Tino (N° 6 - TCO)
+- RAFANOMEZANTSOA Holinirina Vahatriniaina (N° 10 - TCO)
+- RAKOTOVAO Nantenaina Elvys (N° 18 - TCO)
 
-**Licence 3 Télécommunications**
+**Licence 3 Télécommunications - Université de l'Itasy**
+
+---
+
+### Environnements de test
+Afin de garantir la portabilité et la robustesse de notre serveur, 
+les tests ont été effectués sur trois environnements distincts :
+
+**Environnement 1 : Station de travail (Fedora)**
+* **OS :** Fedora 43
+* **Compilateur :** GCC 15.2.1
+* **Outil d'analyse :** Valgrind 3.27.0
+
+**Environnement 2 : Station de travail (Ubuntu)**
+* **OS :** Ubuntu 24.04.1 LTS
+* **Compilateur :** GCC 13.3.0
+* **Outil d'analyse :** Valgrind 3.22.0
+
+**Environnement 3 : Machine Virtuelle (Debian)**
+* **OS :** Debian 12
+* **Compilateur :** GCC 12.2.0
+* **Outil d'analyse :** Valgrind 3.19.0
+
+---
+
+### Environnement de test
+Les codes de ce TP ont été testés sur différents environnemments pour 
+s'assurer d'une bonne compatibilité.
+
+**Environnement 1 : Station de travail (Fedora)**
+* **OS :** Fedora 43
+* **Compilateur :** GCC 15.2.1
+* **Outil d'analyse :** Valgrind 3.27.0
+
+**Environnement 2 : Station de travail (Ubuntu)**
+* **OS :** Ubuntu 24.04.1 LTS
+* **Compilateur :** GCC 13.3.0
+* **Outil d'analyse :** Valgrind 3.22.0
 
 ---
 
 ## Partie 1 — Serveur TCP itératif
 
 ### Description
-Serveur TCP minimaliste en mode itératif. Il traite un client à la fois.
+Serveur TCP minimaliste en mode itératif. Il traite un seul client à la fois.
 La socket est créée avec socket(), configurée avec SO_REUSEADDR, bind() sur
 le port 9999 et listen() avec un backlog de 10.
 
@@ -204,7 +241,7 @@ détachent le serveur de tout terminal. Logs via syslog dans
 ### Valgrind — fuites mémoire
     $ valgrind --leak-check=full --track-origins=yes ./tcp_server
     definitely lost: 0 bytes
-    possibly lost: 816 bytes (interne glibc pthread_create)
+    possibly lost: 816 bytes (interne glibc pthread_create, pas notre code)
     Notre code ne présente aucune fuite mémoire.
 
 ### SO_REUSEADDR — redémarrage immédiat
