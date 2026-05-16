@@ -1,0 +1,12 @@
+# Configuration syslog pour myserverd
+# Ajouter cette ligne dans /etc/rsyslog.conf
+
+# Rediriger tous les messages de facility LOG_DAEMON
+# vers un fichier de log dédié
+daemon.*    /var/log/myserverd.log
+
+# Redémarrer rsyslog après modification :
+# sudo systemctl restart rsyslog
+
+# Surveiller les logs en temps réel :
+# sudo tail -f /var/log/myserverd.log
