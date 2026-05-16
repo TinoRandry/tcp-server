@@ -204,7 +204,7 @@ détachent le serveur de tout terminal. Logs via syslog dans
 ### Valgrind — fuites mémoire
     $ valgrind --leak-check=full --track-origins=yes ./tcp_server
     definitely lost: 0 bytes
-    possibly lost: 816 bytes (interne glibc pthread_create, pas notre code)
+    possibly lost: 816 bytes (interne glibc pthread_create)
     Notre code ne présente aucune fuite mémoire.
 
 ### SO_REUSEADDR — redémarrage immédiat
