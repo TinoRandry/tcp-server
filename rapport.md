@@ -1,9 +1,9 @@
 # Conception, analyse et comparaison de différents modèles de serveurs TCP en C
 
 **Auteurs :**
-- FIONONANA RANDRY Tino
-- RAFANOMEZANTSOA Holinirina Vahatriniaina
-- RAKOTOVAO Nantenaina Elvys
+- FIONONANA RANDRY Tino (N° 6 - TCO)
+- RAFANOMEZANTSOA Holinirina Vahatriniaina (N° 10 - TCO)
+- RAKOTOVAO Nantenaina Elvys (N° 18 - TCO)
 
 **Licence 3 Télécommunications**
 
@@ -226,12 +226,13 @@ itératif, un client inactif ne bloque pas les autres.
 
 ### 5.3 Réponses aux 4 questions select/poll/epoll
 
-select() est limité à FD_SETSIZE = 1024 descripteurs maximum. poll() utilise
-un tableau dynamique sans limite fixe. FD_SETSIZE=1024 est insuffisant en
+* select() est limité à FD_SETSIZE = 1024 descripteurs maximum. poll() utilise
+un tableau dynamique sans limite fixe. 
+* FD_SETSIZE=1024 est insuffisant en
 production car un serveur peut recevoir des milliers de connexions simultanées.
-Pour 500 connexions poll() est préférable car son API est plus claire avec un
+* Pour 500 connexions poll() est préférable car son API est plus claire avec un
 tableau de struct pollfd et le fd_set n'est pas à reconstruire à chaque appel.
-Pour 10 000+ connexions epoll (Linux) est recommandé avec une complexité O(1)
+* Pour 10 000+ connexions epoll (Linux) est recommandé avec une complexité O(1)
 au lieu de O(n) pour select/poll. epoll est utilisé par nginx, Redis et Node.js
 et supporte le mode edge-triggered pour encore plus de performance.
 
