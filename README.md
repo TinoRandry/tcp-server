@@ -19,7 +19,7 @@ les tests ont été effectués sur trois environnements distincts :
 * **Outil d'analyse :** Valgrind 3.27.0
 
 **Environnement 2 : Station de travail (Ubuntu)**
-* **OS :** Ubuntu 24.04.1 LTS
+* **OS :** Ubuntu 24.04.4 LTS
 * **Compilateur :** GCC 13.3.0
 * **Outil d'analyse :** Valgrind 3.22.0
 
@@ -30,21 +30,7 @@ les tests ont été effectués sur trois environnements distincts :
 
 ---
 
-### Environnement de test
-Les codes de ce TP ont été testés sur différents environnemments pour 
-s'assurer d'une bonne compatibilité.
 
-**Environnement 1 : Station de travail (Fedora)**
-* **OS :** Fedora 43
-* **Compilateur :** GCC 15.2.1
-* **Outil d'analyse :** Valgrind 3.27.0
-
-**Environnement 2 : Station de travail (Ubuntu)**
-* **OS :** Ubuntu 24.04.1 LTS
-* **Compilateur :** GCC 13.3.0
-* **Outil d'analyse :** Valgrind 3.22.0
-
----
 
 ## Partie 1 — Serveur TCP itératif
 
